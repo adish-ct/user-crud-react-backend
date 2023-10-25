@@ -22,3 +22,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+
+
+# UserCreateSerializer it will display the password in it's responce
+# Creating another serializer for providing responce without password
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # avoid the password field we can use this serializer to provide responce
+        fields = ("first_name", "last_name", "email")

@@ -3,32 +3,26 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserCreateSerializer
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from .serializers import UserCreateSerializer, UserSerializer
 
 
 class RegisterView(APIView):
     def post(self, request):
         # data is in object format.
         data = request.data
-        # serialize the given user with our serializer
-        # we pass the data into the serializer create method written in serializer
 
-        # This is happens behind the scene
-        # serializer = UserCreateSerializer(
-        #     data={
-        #         "first_data": data["first_name"],
-        #         "last_name": data["last_name"],
-        #         "email": data["email"],
-        #         "password": data["password"],
-        #     }
-        # )
+        # what happens behind the scene check LogicFile.py - line 4
         serializer = UserCreateSerializer(data=data)
 
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # creating object with serializer data
+        user = serializer.create(serializer.validated_data)
+        # serialize our user object with UserSerializer for hide password.
+        user = UserSerializer(user)
         # Now user objects has a property data it will return as Response
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(user.data, status=status.HTTP_201_CREATED)
 
 
 class RetriveUserView(APIView):
