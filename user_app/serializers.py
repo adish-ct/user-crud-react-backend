@@ -5,6 +5,7 @@ User = get_user_model()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    # ModelSerializer used to validate data itself.
     class Meta:
         model = User
         fields = "__all__"
