@@ -11,20 +11,24 @@ User = get_user_model()
 
 class RegisterView(APIView):
     def post(self, request):
+        # data is in object format.
         data = request.data
-
-        first_name = data["first_name"]
-        last_name = data["last_name"]
-        email = data["email"]
-        password = data["password"]
-
-        # create user object with the given data, it will return user
-        user = User.objects.create_user(first_name, last_name, email, password)
         # serialize the given user with our serializer
-        user = UserCreateSerializer(user)
+        # we pass the data into the serializer create method written in serializer
+
+        # This is happens behind the scene
+        # serializer = UserCreateSerializer(
+        #     data={
+        #         "first_data": data["first_name"],
+        #         "last_name": data["last_name"],
+        #         "email": data["email"],
+        #         "password": data["password"],
+        #     }
+        # )
+        serializer = UserCreateSerializer(data=data)
 
         # Now user objects has a property data it will return as Response
-        return Response(user.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class RetriveUserView(APIView):
