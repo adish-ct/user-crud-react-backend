@@ -26,6 +26,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise exceptions.ValidationError(
                 {"password error": serializer_error.get("non_field_errors", [])}
             )
+        return data
 
     # we are overriding the create.
 
