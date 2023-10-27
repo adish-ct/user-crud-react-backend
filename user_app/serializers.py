@@ -2,36 +2,36 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
 
+# serializers.py
 class UserCreateSerializer(serializers.ModelSerializer):
-    # ModelSerializer used to validate data itself.
     class Meta:
         model = User
-        # we can choose specific instead of entire field with a tuple
-        fields = ("first_name", "last_name", "email", "password")
+        fields = ["first_name", "last_name", "email", "password"]
 
-    # password validation for improving security
     def validate(self, data):
-        # create instance with the given data
-        user = User(**data)
-        password = user.password
-        try:
-            validate_password(password, user)
-        # validate perticular exception
-        except exceptions.ValidationError as e:
-            serializer_error = serializers.as_serializer_error(e)
-            raise exceptions.ValidationError(
-                {"password error": serializer_error.get("non_field_errors", [])}
+        # Validate individual fields here if needed
+        # For example, you can check if email is unique
+        if User.objects.filter(email=data["email"]).exists():
+            raise serializers.ValidationError(
+                {"email": ["Email address must be unique."]}
             )
+
+        # Validate password using Django's password validation
+        password = data.get("password")
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            raise serializers.ValidationError({"password": e.messages})
+
         return data
 
-    # we are overriding the create.
-
-    # validated data comes from RegisterView data={}
     def create(self, validated_data):
+        # Custom create method if needed
         user = User.objects.create_user(
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
