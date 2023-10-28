@@ -8,23 +8,29 @@ from .serializers import UserCreateSerializer, UserSerializer
 
 class RegisterView(APIView):
     def post(self, request):
-        # data is in object format.
-        data = request.data
-        print("--------type of data ----------", data)
-        # what happens behind the scene check LogicFile.py - line 4
-        serializer = UserCreateSerializer(data=data)
-        print("----- serializer ------", serializer)
+        try:
+            data = request.data
+            print("--------type of data ----------", data)
 
-        if serializer.is_valid():
-            # creating object with serializer data
-            user = serializer.create(serializer.validated_data)
-            # serialize our user object with UserSerializer for hide password.
-            user = UserSerializer(user)
-            print("--------- user ---------", user)
-            # Now user objects has a property data it will return as Response
-            return Response(user.data, status=status.HTTP_201_CREATED)
-        print("------------ exception ------------")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer = UserCreateSerializer(data=data)
+            print("----- serializer ------", serializer)
+
+            if serializer.is_valid():
+                user = serializer.create(serializer.validated_data)
+                user = UserSerializer(user)
+                return Response(user.data, status=status.HTTP_201_CREATED)
+            else:
+                print(
+                    "Serializer Errors:", serializer.errors
+                )  # Add this line for debugging
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print("Error during registration:", str(e))  # Add this line for debugging
+            return Response(
+                {"detail": "Internal Server Error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class RetriveUserView(APIView):
@@ -37,10 +43,3 @@ class RetriveUserView(APIView):
         user = UserSerializer(user)
 
         return Response(user.data, status=status.HTTP_200_OK)
-
-
-class RetriveData(APIView):
-    def get(self, request):
-        data = {"data": "configuration success"}
-
-        return Response(data, status=status.HTTP_200_OK)
